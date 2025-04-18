@@ -3,12 +3,17 @@
 # Exit immediately if any command fails
 set -e
 
+sudo apt update
+
 # Check if required commands are available
 check_command() {
     if ! command -v "$1" >/dev/null 2>&1; then
-        echo "Error: '$1' command not found. Please install it first."
-        sudo apt install $1
-        exit 1
+        if sudo apt install -y "$1";then 
+            echo "installed $1 succesfully"
+        else 
+            echo "Failed to install $1. try it manually"
+            exit 1
+        fi
     fi
 }
 
@@ -54,4 +59,4 @@ rm -f "$KRISHNA_ZIP" "$SHIVA_ZIP"
 
 echo "All operations completed successfully!"
 
-clear
+# clear
