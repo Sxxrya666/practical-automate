@@ -16,8 +16,8 @@ check_command unzip
 
 # Download files with proper error handling
 download_file() {
-    local url=$1
-    local filename=$2
+    local url="$1"
+    local filename="$2"
     
     echo "Downloading $filename..."
     if ! wget -q --show-progress --content-disposition -O "$filename" "$url"; then
@@ -36,10 +36,15 @@ SHIVA_ZIP="shivbhaktigeet-latest.zip"
 download_file "$KRISHNA_URL" "$KRISHNA_ZIP"
 download_file "$SHIVA_URL" "$SHIVA_ZIP"
 
+
+
 # Verify zip files
 echo "Verifying zip files..."
 unzip "$KRISHNA_ZIP"
 unzip "$SHIVA_ZIP"
+
+mv bhajangeet-latest/ bhajangeet/
+mv bhaktigeet-latest/ bhaktigeet/
 
 # Clean up
 echo "Cleaning up..."
@@ -47,4 +52,4 @@ rm -f "$KRISHNA_ZIP" "$SHIVA_ZIP"
 
 echo "All operations completed successfully!"
 
-clear
+# clear
