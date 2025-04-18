@@ -1,22 +1,22 @@
 <#
 .SYNOPSIS
-    Downloads and extracts devotional songs without admin rights
+    Downloads and extracts devotional songs without admin rights or nested folders
 #>
 
 $ErrorActionPreference = "Stop"
 
-# Download function with retry logic
-function Get-File {
+# Improved download function
+function Get-BhajanFile {
     param ($url, $output)
     try {
-        Write-Host "Downloading $output..."
-        (New-Object Net.WebClient).DownloadFile($url, $output)
+        Write-Host "📥 Downloading $output..." -ForegroundColor Cyan
+        Invoke-WebRequest $url -OutFile $output -UserAgent "Wget"
     } catch {
-        Write-Host "⚠️ Retrying download..." -ForegroundColor Yellow
+        Write-Host "⚠️ Retrying with alternate download method..." -ForegroundColor Yellow
         try {
-            Invoke-WebRequest $url -OutFile $output -UserAgent "Wget"
+            (New-Object Net.WebClient).DownloadFile($url, $output)
         } catch {
-            Write-Host "❌ Failed to download $output" -ForegroundColor Red
+            Write-Host "❌ Failed to download: $output" -ForegroundColor Red
             exit 1
         }
     }
@@ -28,24 +28,35 @@ $files = @{
     Shiva   = "https://bit.ly/shivbhaktigeet"
 }
 
-# Download and extract each file
+# Process each download
 foreach ($god in $files.Keys) {
     $zip = "$god-songs.zip"
-    Get-File -url $files[$god] -output $zip
-    
-    # Extract to subfolder
     $dest = "$god-bhajans"
-    New-Item -ItemType Directory -Path $dest -Force | Out-Null
-    try {
-        Expand-Archive -Path $zip -DestinationPath $dest -Force
-    } catch {
-        Write-Host "❌ Extraction failed for $zip" -ForegroundColor Red
-        exit 1
+    
+    # Download
+    Get-BhajanFile -url $files[$god] -output $zip
+    
+    # Create destination (if doesn't exist)
+    if (-not (Test-Path $dest)) {
+        New-Item -ItemType Directory -Path $dest | Out-Null
     }
     
-    # Cleanup
-    Remove-Item $zip -ErrorAction SilentlyContinue
+    # Extract directly to destination (no nested folders)
+    try {
+        Expand-Archive -Path $zip -DestinationPath $dest -Force
+        Write-Host "✔️ Extracted to: $dest" -ForegroundColor Green
+        
+        # Remove the zip file
+        Remove-Item $zip -ErrorAction SilentlyContinue
+    } catch {
+        Write-Host "❌ Failed to extract $zip" -ForegroundColor Red
+        exit 1
+    }
 }
 
-Write-Host "✅ Success! Files extracted to:" -ForegroundColor Green
-Get-ChildItem | Where-Object { $_.PSIsContainer -and $_.Name -match "bhajans" } | Select-Object Name
+# Final output
+Write-Host "`n🎉 All done! Your bhajans are in:" -ForegroundColor Magenta
+Get-ChildItem -Directory | Where-Object { $_.Name -match "bhajans" } | ForEach-Object {
+    Write-Host "→ $($_.FullName)" -ForegroundColor White
+}
+Clear-Host
