@@ -52,4 +52,4 @@ rm -f "$KRISHNA_ZIP" "$SHIVA_ZIP"
 
 echo "All operations completed successfully!"
 
-# clear
+clear
