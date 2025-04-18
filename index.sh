@@ -7,12 +7,14 @@ set -e
 check_command() {
     if ! command -v "$1" >/dev/null 2>&1; then
         echo "Error: '$1' command not found. Please install it first."
+        sudo apt install $1
         exit 1
     fi
 }
 
 check_command wget
 check_command unzip
+check_command tmux
 
 # Download files with proper error handling
 download_file() {
