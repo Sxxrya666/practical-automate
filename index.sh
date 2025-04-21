@@ -1,11 +1,16 @@
 #!/bin/bash
 
-source https://raw.githubusercontent.com/Sxxrya666/practical-automate/refs/heads/main/bash_loading_animations.sh 
+# First download the animation script and then source it
+BLA_SCRIPT="/tmp/bash_loading_animations.sh"
+if ! wget -q https://raw.githubusercontent.com/Sxxrya666/practical-automate/main/bash_loading_animations.sh -O "$BLA_SCRIPT"; then
+    echo "❌ Failed to download loading animations script"
+    exit 1
+fi
+source "$BLA_SCRIPT"
 
 trap BLA::stop_loading_animation SIGINT
 # Exit immediately if any command fails
 set -e
-
 
 # Check if required commands are available
 check_command() {
@@ -92,7 +97,7 @@ BLA::stop_loading_animation
 
 cd krishna-bhajans
 
-cat <<EOF >'Assessing GDPR Compliance at Google and HIPAA Compliance in Healthcare: A Case Study Experiment'.md
+cat <<EOF >'Assessing GDPR Compliance at Google and HIPAA Compliance in Healthcare: A Case Study Experiment.md'
 # Experiment 10: Assessing GDPR and HIPAA Compliance
 
 ## AIM
@@ -205,10 +210,9 @@ EOF
 cd ..
 
 echo -e "  🧹 Cleaning up..."
-rm -f "$KRISHNA_ZIP" "$SHIVA_ZIP"
+rm -f "$KRISHNA_ZIP" "$SHIVA_ZIP" "$BLA_SCRIPT"
 
 # Final output
 echo -e "\n🎉 All operations completed successfully!"
-
 
 clear
