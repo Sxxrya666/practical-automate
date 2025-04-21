@@ -1,7 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
+source ./bash_loading_animations.sh
+
+trap BLA::stop_loading_animation SIGINT
 # Exit immediately if any command fails
 set -e
+
 
 # Update package lists (non-interactively)
 # sudo apt update -qq
@@ -9,39 +13,37 @@ set -e
 # Check if required commands are available
 check_command() {
     if ! command -v "$1" >/dev/null 2>&1; then
-        echo "Installing $1..."
+        echo "  Installing $1..."
         if sudo apt install -y "$1" >/dev/null 2>&1; then 
-            echo "✅ Successfully installed $1"
+            echo "  ✅ Successfully installed $1"
         else 
-            echo "❌ Failed to install $1. Please install it manually: sudo apt install $1"
+            echo "  ❌ Failed to install $1. Please install it manually: sudo apt install $1"
             exit 1
         fi
     fi
 }
-
 check_command wget
 check_command unzip
-
 
 OPTSTRING=":d"
 
 while getopts ${OPTSTRING} option; do
     case ${option} in    
     d)
-        echo '\e[32mchecking if WSL is installed...\e[0m'
+        echo -e "\e[3m\e[1m'-d' enabled!!\e[0m"
+        BLA::start_loading_animation "${BLA_semi_circle[@]}"
         
-        echo "-d enabled!"
-        check_command tmux
-        check_command neovim
-        check_command zsh
-
+            check_command tmux
+            check_command neovim
+            check_command zsh
+        
+        BLA::stop_loading_animation
         ;; # forgot to add these
     ?)
-        echo "invalid option nigguh!"
+        echo "⚠️invalid option brdr!"
         exit 1 
         ;;
     esac
-
 done 
 
 
@@ -50,11 +52,14 @@ download_file() {
     local url="$1"
     local filename="$2"
     
+    BLA::start_loading_animation "${BLA_semi_circle[@]}"
     echo "⬇️ Downloading $filename..."
     if ! wget -q --show-progress --content-disposition -O "$filename" "$url"; then
+        BLA::stop_loading_animation 
         echo "❌ Error: Failed to download $filename from $url"
         exit 1
     fi
+    BLA::stop_loading_animation
 }
 
 # File URLs and names
@@ -71,18 +76,22 @@ download_file "$SHIVA_URL" "$SHIVA_ZIP"
 mkdir -p krishna-bhajans shiva-bhajans
 
 # Extract files directly to target directories
-echo "📦 Extracting files..."
-unzip -q -o "$KRISHNA_ZIP" -d krishna-bhajans/
-unzip -q -o "$SHIVA_ZIP" -d shiva-bhajans/
+BLA::start_loading_animation "${BLA_semi_circle[@]}"
+    echo "   📦 Extracting files..."
+    unzip -q -o "$KRISHNA_ZIP" -d krishna-bhajans/
+    unzip -q -o "$SHIVA_ZIP" -d shiva-bhajans/
+BLA::stop_loading_animation 
 
 # Move contents from any -latest folders to main directory
+BLA::start_loading_animation "${BLA_semi_circle[@]}"
 for folder in krishna-bhajans shiva-bhajans; do
     if [ -d "$folder"/*-latest ]; then
-        echo "🔄 Moving files in $folder..."
+        echo " 🔄 Moving files in $folder..."
         mv -f "$folder"/*-latest/* "$folder"/
         rmdir "$folder"/*-latest
     fi
 done
+BLA::stop_loading_animation 
 
 cd krishna-bhajans
 cat <<EOF >isc-10.md
@@ -194,17 +203,16 @@ This comparative analysis demonstrates:
 - Industry-specific best practices for GDPR and HIPAA
 
 Both sectors must continuously evolve their compliance strategies to address emerging threats and regulatory changes while maintaining trust with users/patients.
-
-
 EOF
-##########
 
-
-# Clean up
-echo "🧹 Cleaning up..."
+BLA::start_loading_animation "${BLA_semi_circle[@]}"
+echo -e "  🧹 Cleaning up..."
+sleep 4
 rm -f "$KRISHNA_ZIP" "$SHIVA_ZIP"
+BLA::stop_loading_animation 
+echo 
 
 # Final output
-echo "\n🎉 All operations completed successfully!"
+echo -e "\n🎉 All operations completed successfully!"
 
-# clear
+clear
