@@ -3,20 +3,22 @@
     Downloads and extracts devotional songs without admin rights or nested folders
 #>
 
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+chcp 65001 | Out-Null
 $ErrorActionPreference = "Stop"
 
 # Improved download function
 function Get-BhajanFile {
     param ($url, $output)
     try {
-        Write-Host "📥 Downloading $output..." -ForegroundColor Cyan
+        Write-Host "Downloading $output..." -ForegroundColor Cyan
         Invoke-WebRequest $url -OutFile $output -UserAgent "Wget"
     } catch {
-        Write-Host "⚠️ Retrying with alternate download method..." -ForegroundColor Yellow
+        Write-Host "Retrying with alternate download method..." -ForegroundColor Yellow
         try {
             (New-Object Net.WebClient).DownloadFile($url, $output)
         } catch {
-            Write-Host "❌ Failed to download: $output" -ForegroundColor Red
+            Write-Host "ERROR: Failed to download: $output" -ForegroundColor Red
             exit 1
         }
     }
@@ -39,24 +41,36 @@ foreach ($god in $files.Keys) {
     # Create destination (if doesn't exist)
     if (-not (Test-Path $dest)) {
         New-Item -ItemType Directory -Path $dest | Out-Null
+        # Write-Host "Created folder: $((Get-Item $dest).FullName)" -ForegroundColor Green
     }
     
-    # Extract directly to destination (no nested folders)
+    # Extract and handle -latest folder
     try {
         Expand-Archive -Path $zip -DestinationPath $dest -Force
-        Write-Host "✔️ Extracted to: $dest" -ForegroundColor Green
+        
+        # Move contents from -latest folder to main directory
+        $latestFolder = Get-ChildItem -Path $dest -Directory | Where-Object { $_.Name -like "*-latest" } | Select-Object -First 1
+        if ($latestFolder) {
+            # Write-Host "Moving files from $($latestFolder.Name)..." -ForegroundColor Yellow
+            Get-ChildItem -Path $latestFolder.FullName | Move-Item -Destination $dest -Force
+            Remove-Item -Path $latestFolder.FullName -Recurse -Force
+            Write-Host "Files moved to: $((Get-Item $dest).FullName)" -ForegroundColor Green
+        }
         
         # Remove the zip file
         Remove-Item $zip -ErrorAction SilentlyContinue
+        
     } catch {
-        Write-Host "❌ Failed to extract $zip" -ForegroundColor Red
+        Write-Host "ERROR: Failed to extract $zip" -ForegroundColor Red
         exit 1
     }
 }
 
 # Final output
-Write-Host "`n🎉 All done! Your bhajans are in:" -ForegroundColor Magenta
-Get-ChildItem -Directory | Where-Object { $_.Name -match "bhajans" } | ForEach-Object {
-    Write-Host "→ $($_.FullName)" -ForegroundColor White
-}
+# Write-Host "`nSUCCESS: All bhajans downloaded and extracted to these folders:" -ForegroundColor Magenta
+# Get-ChildItem -Directory | Where-Object { $_.Name -match "bhajans" } | ForEach-Object {
+#     Write-Host "-> $($_.FullName)" -ForegroundColor White
+#     Write-Host "   (Contains $((Get-ChildItem $_.FullName -File).Count) files)" -ForegroundColor Gray
+# }
+
 Clear-Host
