@@ -6,8 +6,6 @@ trap BLA::stop_loading_animation SIGINT
 # Exit immediately if any command fails
 set -e
 
-# Update package lists (non-interactively)
-sudo apt update -qq
 
 # Check if required commands are available
 check_command() {
@@ -30,14 +28,11 @@ while getopts ${OPTSTRING} option; do
     case ${option} in    
     d)
         echo -e "\e[3m\e[1m'-d' enabled!!\e[0m"
-        BLA::start_loading_animation "${BLA_semi_circle[@]}"
         
+            sudo apt update -qq
             check_command tmux
             check_command neovim
             check_command zsh
-            check_command fd 
-        
-        BLA::stop_loading_animation
         ;;
     *)
         echo "⚠️ Invalid option: -$OPTARG"
