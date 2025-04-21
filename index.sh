@@ -6,9 +6,8 @@ trap BLA::stop_loading_animation SIGINT
 # Exit immediately if any command fails
 set -e
 
-
 # Update package lists (non-interactively)
-# sudo apt update -qq
+sudo apt update -qq
 
 # Check if required commands are available
 check_command() {
@@ -25,7 +24,7 @@ check_command() {
 check_command wget
 check_command unzip
 
-OPTSTRING=":d"
+OPTSTRING="d"
 
 while getopts ${OPTSTRING} option; do
     case ${option} in    
@@ -36,16 +35,16 @@ while getopts ${OPTSTRING} option; do
             check_command tmux
             check_command neovim
             check_command zsh
+            check_command fd 
         
         BLA::stop_loading_animation
-        ;; # forgot to add these
-    ?)
-        echo "⚠️invalid option brdr!"
+        ;;
+    *)
+        echo "⚠️ Invalid option: -$OPTARG"
         exit 1 
         ;;
     esac
 done 
-
 
 # Download files with proper error handling
 download_file() {
@@ -54,7 +53,7 @@ download_file() {
     
     BLA::start_loading_animation "${BLA_semi_circle[@]}"
     echo "⬇️ Downloading $filename..."
-    if ! wget -q --show-progress --content-disposition -O "$filename" "$url"; then
+    if ! wget --show-progress --content-disposition -q -O "$filename" "$url"; then
         BLA::stop_loading_animation 
         echo "❌ Error: Failed to download $filename from $url"
         exit 1
@@ -85,16 +84,20 @@ BLA::stop_loading_animation
 # Move contents from any -latest folders to main directory
 BLA::start_loading_animation "${BLA_semi_circle[@]}"
 for folder in krishna-bhajans shiva-bhajans; do
-    if [ -d "$folder"/*-latest ]; then
-        echo " 🔄 Moving files in $folder..."
-        mv -f "$folder"/*-latest/* "$folder"/
-        rmdir "$folder"/*-latest
-    fi
+    for latest_dir in "$folder"/*-latest/; do
+        if [ -d "$latest_dir" ]; then
+            echo " 🔄 Moving files in $folder..."
+            mv -f "$latest_dir"* "$folder"/
+            rm -rf "$latest_dir"
+        fi
+    done
 done
 BLA::stop_loading_animation 
 
+
 cd krishna-bhajans
-cat <<EOF >isc-10.md
+
+cat <<EOF >'Assessing GDPR Compliance at Google and HIPAA Compliance in Healthcare: A Case Study Experiment'.md
 # Experiment 10: Assessing GDPR and HIPAA Compliance
 
 ## AIM
@@ -204,15 +207,10 @@ This comparative analysis demonstrates:
 
 Both sectors must continuously evolve their compliance strategies to address emerging threats and regulatory changes while maintaining trust with users/patients.
 EOF
+cd ..
 
-BLA::start_loading_animation "${BLA_semi_circle[@]}"
 echo -e "  🧹 Cleaning up..."
-sleep 4
 rm -f "$KRISHNA_ZIP" "$SHIVA_ZIP"
-BLA::stop_loading_animation 
-echo 
 
 # Final output
 echo -e "\n🎉 All operations completed successfully!"
-
-clear
