@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ./bash_loading_animations.sh
+source https://raw.githubusercontent.com/Sxxrya666/practical-automate/refs/heads/main/bash_loading_animations.sh 
 
 trap BLA::stop_loading_animation SIGINT
 # Exit immediately if any command fails
