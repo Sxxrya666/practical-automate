@@ -209,3 +209,6 @@ rm -f "$KRISHNA_ZIP" "$SHIVA_ZIP"
 
 # Final output
 echo -e "\n🎉 All operations completed successfully!"
+
+
+clear
