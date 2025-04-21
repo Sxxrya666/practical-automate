@@ -4,7 +4,7 @@
 set -e
 
 # Update package lists (non-interactively)
-sudo apt update -qq
+# sudo apt update -qq
 
 # Check if required commands are available
 check_command() {
